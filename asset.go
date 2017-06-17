@@ -177,7 +177,7 @@ return nil, nil
 func (t *SimpleChaincode) addInvoice(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	fmt.Println("adding invoice information")
 	if len(args) != 8 {
-		return nil, errors.New("Incorrect Number of arguments.Expecting 4 for addInvoice")
+		return nil, errors.New("Incorrect Number of arguments.Expecting 8 for addInvoice")
 	}
 	amt, err := strconv.ParseFloat(args[1], 64)
 	
@@ -190,7 +190,7 @@ func (t *SimpleChaincode) addInvoice(stub shim.ChaincodeStubInterface, args []st
 		Date: args[4],
 		Buyer: args[5],
 		Currency: args[6],
-		Amount: amt
+		Amount: amt,
 	}
 
 	bytes, err := json.Marshal(invoice)
