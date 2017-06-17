@@ -36,10 +36,11 @@ type Product struct {
 //Invoice
 type Invoice struct {
 	InvNo string `json:"invNo"`
+	Company string `json:"companyName"`
+	CompanyRegNo string `json:"companyRegNo"`
 	PoNo string  `json:"poNo"`
 	Date   string  `json:"date"`
 	Buyer string  `json:"buyer"`
-	Owner string  `json:"owner"`
 	Currency string  `json:"currency"`
 	Amount float64 `json:"amount"`
 }
@@ -81,6 +82,8 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 		return t.write(stub, args)
 	} else if function == "addproduct" {
 		return t.addProduct(stub, args)
+	} else if function == "addinvoice" {
+		return t.addInvoice(stub,args)
 	}
 	fmt.Println("invoke did not find func: " + function)
 
@@ -96,6 +99,8 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		return t.read(stub, args)
 	} else if function == "readproduct" {
 		return t.readProduct(stub, args)
+	} else if function == "readinvoice"{
+		return t.readInvoice(stub, args)
 	}
 	fmt.Println("query did not find func: " + function)
 
@@ -168,6 +173,39 @@ func (t *SimpleChaincode) addProduct(stub shim.ChaincodeStubInterface, args []st
 return nil, nil
 }
 
+
+func (t *SimpleChaincode) addInvoice(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	fmt.Println("adding invoice information")
+	if len(args) != 8 {
+		return nil, errors.New("Incorrect Number of arguments.Expecting 4 for addInvoice")
+	}
+	amt, err := strconv.ParseFloat(args[1], 64)
+	
+
+	invoice := Invoice{
+		InvNo:   args[0],
+		Company: args[1],
+		CompanyRegNo: args[2],
+		PoNo: args[3],
+		Date: args[4],
+		Buyer: args[5],
+		Currency: args[6],
+		Amount: amt
+	}
+
+	bytes, err := json.Marshal(invoice)
+	if err != nil {
+		fmt.Println("Error marshaling invoice")
+		return nil, errors.New("Error marshaling invoice")
+	}
+
+	err = stub.PutState(invoice.InvNo, bytes)
+	if err != nil {
+		return nil, err
+}
+return nil, nil
+}
+
 func (t *SimpleChaincode) readProduct(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	fmt.Println("read() is running")
 
@@ -200,6 +238,26 @@ func (t *SimpleChaincode) readProduct(stub shim.ChaincodeStubInterface, args []s
 
 	fmt.Println(bytes)
 	*/
+	return bytes, nil
+}
+
+
+func (t *SimpleChaincode) readInvoice(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	fmt.Println("read() is running")
+
+	if len(args) != 1 {
+		return nil, errors.New("Incorrect number of arguments. expecting 1")
+	}
+
+	key := args[0] // name of Entity
+	fmt.Println("key is ")
+	fmt.Println(key)
+	bytes, err := stub.GetState(args[0])
+	fmt.Println(bytes)
+	if err != nil {
+		fmt.Println("Error retrieving " + key)
+		return nil, errors.New("Error retrieving " + key)
+	}
 	return bytes, nil
 }
 
